@@ -9,23 +9,25 @@ def computeVersionName() {
 
 buildscript {
     repositories {
+        google()
         jcenter()
+        maven { url 'https://zendesk.jfrog.io/zendesk/repo' }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:4.0.2'
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 30
     buildToolsVersion "23.0.1"
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 22
+        targetSdkVersion 30
         versionCode 1
         // get version name from package.json version
         versionName computeVersionName()
@@ -38,11 +40,10 @@ android {
 repositories {
     mavenCentral()
     maven { url 'https://zendesk.jfrog.io/zendesk/repo' }
+    google()
 }
 
 dependencies {
-    compile 'com.facebook.react:react-native:+'
-    compile (group: 'com.zendesk', name: 'sdk', version: '1.9.0.1'){
-        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
+    implementation 'com.facebook.react:react-native:+'
+    implementation group: 'com.zendesk', name: 'support', version: '5.0.2'
 }

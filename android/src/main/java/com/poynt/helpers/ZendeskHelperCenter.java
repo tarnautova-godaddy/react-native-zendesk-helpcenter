@@ -2,7 +2,6 @@ package com.poynt.helpers;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -12,21 +11,20 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
-import com.zendesk.sdk.model.access.AnonymousIdentity;
-import com.zendesk.sdk.network.impl.ZendeskConfig;
-import com.zendesk.sdk.support.SupportActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.R.attr.duration;
-import static android.R.id.message;
-import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
+import zendesk.core.AnonymousIdentity;
+import zendesk.core.Zendesk;
+import zendesk.support.Support;
+import zendesk.support.guide.HelpCenterActivity;
+import zendesk.support.guide.HelpCenterConfiguration;
 
 public class ZendeskHelperCenter extends ReactContextBaseJavaModule {
     private static final String TAG = "ZendeskHelpCenter";
@@ -114,12 +112,12 @@ public class ZendeskHelperCenter extends ReactContextBaseJavaModule {
         }
         return array;
     }
+
     private void initializeZendesk(ReadableMap options) {
-        if(!options.hasKey("url")||!options.hasKey("appId") || !options.hasKey("clientId") || !options.hasKey("name") || !options.hasKey("email") ){
-            this.toast("Config params must include url, appId, clientId, name, & email",Toast.LENGTH_LONG);
+        if (!options.hasKey("url") || !options.hasKey("appId") || !options.hasKey("clientId") || !options.hasKey("name") || !options.hasKey("email")) {
+            this.toast("Config params must include url, appId, clientId, name, & email", Toast.LENGTH_LONG);
             return;
         }
-
 
         String url = options.getString("url");
         String appId = options.getString("appId");
@@ -128,16 +126,16 @@ public class ZendeskHelperCenter extends ReactContextBaseJavaModule {
         String email = options.getString("email");
 
         //create the support activity
-        SupportActivity.Builder builder = new SupportActivity.Builder();
+        HelpCenterConfiguration.Builder builder = HelpCenterActivity.builder();
 
         //parse options
         try {
             JSONObject jsonObject = convertMapToJson(options);
             JSONArray categoriesArray = jsonObject.getJSONArray("withArticlesForCategoryIds");
-            long[] data = new long[categoriesArray.length()];
-            for(int i=0;i<categoriesArray.length();i++){
+            ArrayList<Long> data = new ArrayList<>(categoriesArray.length());
+            for (int i = 0; i < categoriesArray.length(); i++) {
                 long cat = categoriesArray.getLong(i);
-                data[i] = cat;
+                data.add(cat);
             }
             builder.withArticlesForCategoryIds(data);
         } catch (JSONException e) {
@@ -147,19 +145,19 @@ public class ZendeskHelperCenter extends ReactContextBaseJavaModule {
         Context ctx = getReactApplicationContext();
         // Initialize the Support SDK with your Zendesk Support subdomain, mobile SDK app ID, and client ID.
         // Get these details from your Zendesk Support dashboard: Admin -> Channels -> Mobile SDK
-        ZendeskConfig.INSTANCE.init(ctx, url, appId, clientId);
+        Zendesk.INSTANCE.init(ctx, url, appId, clientId);
         // Authenticate anonymously as a Zendesk Support user
-        ZendeskConfig.INSTANCE.setIdentity(
+        Zendesk.INSTANCE.setIdentity(
                 new AnonymousIdentity.Builder()
                         .withNameIdentifier(nameId)
                         .withEmailIdentifier(email)
                         .build()
         );
+        Support.INSTANCE.init(Zendesk.INSTANCE);
 
         Activity activity = getCurrentActivity();
-        if(activity != null){
+        if (activity != null) {
             builder.show(activity);
         }
     }
-
 }
