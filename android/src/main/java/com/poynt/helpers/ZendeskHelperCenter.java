@@ -55,13 +55,9 @@ public class ZendeskHelperCenter extends ReactContextBaseJavaModule {
         Toast.makeText(getReactApplicationContext(), message, duration).show();
     }
 
-
-
     @ReactMethod
     public void show(ReadableMap options) {
-
         initializeZendesk(options);
-
     }
 
     private static JSONObject convertMapToJson(ReadableMap readableMap) throws JSONException {
